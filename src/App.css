@@ -1,0 +1,148 @@
+/* =============================== */
+/* ESTILO GERAL DA PÁGINA          */
+/* =============================== */
+body {
+    background: #f0f2f5; /* Cinza claro moderno */
+    font-family: "Segoe UI", Arial, sans-serif;
+    color: #1f2d4d; /* Azul escuro suave */
+    margin: 0;
+    padding: 0;
+}
+
+/* =============================== */
+/* LINKS                           */
+/* =============================== */
+a {
+    color: #1f5fbf; /* Azul moderado */
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    color: #164a96;
+    text-decoration: underline;
+}
+
+/* =============================== */
+/* CONTAINERS                      */
+/* =============================== */
+.container {
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 25px;
+    background: #ffffff; /* Fundo branco simples */
+    border-radius: 10px;
+    border: 1px solid #d6d9dd; /* Borda leve */
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); /* Sombra suave */
+}
+
+/* Bloco interno */
+.div1 {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f7f8fa; /* Cinza quase branco */
+    border: 1px solid #e2e5ea;
+    border-radius: 8px;
+}
+
+/* Segundo bloco */
+.div2 {
+    margin: 15px auto;
+    padding: 15px;
+    background: #f7f8fa;
+    border: 1px solid #e2e5ea;
+    border-radius: 8px;
+}
+
+/* =============================== */
+/* TÍTULOS E TEXTOS                */
+/* =============================== */
+h1, h2, h3 {
+    color: #1f5fbf; /* Azul bonito */
+    margin-bottom: 12px;
+    text-align: center;
+    font-weight: 600;
+}
+
+p {
+    line-height: 1.5;
+    color: #3c4a66;
+}
+
+/* =============================== */
+/* INPUTS E BOTÕES                 */
+/* =============================== */
+input, select {
+    width: 95%;
+    padding: 10px 12px;
+    margin: 10px 0;
+    align-items: center;
+    border-radius: 6px;
+    border: 1px solid #c7d1e2;
+    background: #fff;
+    font-size: 15px;
+}
+
+/* Foco no input */
+input:focus, select:focus {
+    border-color: #1f5fbf; /* Azul */
+    outline: none;
+}
+
+/* Botão moderno */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #1f5fbf; /* Azul */
+    color: white;
+    font-weight: 600;
+    margin-top: 10px;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.2s;
+}
+
+.centro {
+    text-align: center;
+}
+
+
+button:hover {
+    background: #164a96; /* Azul mais escuro */
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: #ffffff;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+th {
+    background: #2d6cdf; 
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: 600;
+}
+
+td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+tr:nth-child(even) {
+    background: #f3f6ff;
+}
+
+tr:hover {
+    background: #e6edff;
+}
+
+
