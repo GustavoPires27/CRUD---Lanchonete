@@ -13,10 +13,10 @@ export default function App()
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Home/>}/>
-                <Route path="/Pedidos" element={<Pedidos/>}/>
-                <Route path="/Lanches" element={<Lanches/>}/>
-                <Route path="/Bebidas" element={<Bebidas/>}/>
-                <Route path="/Funcionarios" element={<Funcionarios/>}/>
+                <Route path="/pedidos" element={<Pedidos/>}/>
+                <Route path="/lanches" element={<Lanches/>}/>
+                <Route path="/bebidas" element={<Bebidas/>}/>
+                <Route path="/funcionarios" element={<Funcionarios/>}/>
             </Routes>
         </BrowserRouter>
     );

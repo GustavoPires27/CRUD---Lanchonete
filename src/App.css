@@ -145,4 +145,48 @@ tr:hover {
     background: #e6edff;
 }
 
+.home-menu {
+   margin-top: 20px;
+    text-align: center;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.menu-coluna ul {
+    list-style: none;
+    padding: 0;
+     margin: 15px 0;
+    font-size: 18px;
+    color: #1f5fbf;
+    font-weight: 600;
+      color: #164a96;
+    text-decoration: underline;
+}
+
+ .home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0;
+}
+
+.menu-coluna ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-coluna ul li {
+    margin: 10px 0;
+}
+
+.menu-coluna ul li a {
+    font-size: 22px;
+}
+
+
+
 

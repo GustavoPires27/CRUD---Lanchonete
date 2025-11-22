@@ -9,13 +9,14 @@ export default function Bebidas() {
     const [preco, setPreco] = useState("");
     const [resultado, setResultado] = useState("");
     const [idConsulta, setIdConsulta] = useState("");
+    const [editando, setEditando] = useState(false);
 
     async function consultarTodasBebidas() {
         try {
             const resposta = await fetch("http://localhost:3001/bebidas");
             const data = await resposta.json();
 
-            setLista(data);   // ← agora lista recebe TODAS AS BEBIDAS
+            setLista(data);
             setResultado("Consulta geral realizada.");
         }
         catch (error) {
@@ -46,17 +47,13 @@ export default function Bebidas() {
         }
     }
 
-    // ---- CONSULTAR POR ID ----
+    // ----- CONSULTAR POR ID -----
     async function consultarBebidaPorID() {
-
         try {
             const resposta = await fetch(`http://localhost:3001/bebidas/${idConsulta}`);
             const data = await resposta.json();
 
-            // Coloca o objeto dentro de array para funcionar com map()
             setLista([data]);
-
-            // Mensagem simples
             setResultado("Consulta realizada.");
 
             setNome("");
@@ -68,12 +65,83 @@ export default function Bebidas() {
         }
     }
 
-    function alterarBebida() {
-        setResultado("Função de alterar ainda não implementada.");
+    // ----- ALTERAR: CARREGA DADOS NO FORMULÁRIO -----
+    async function alterarBebida() {
+        if (!idConsulta) {
+            setResultado("Digite o ID para alterar.");
+            return;
+        }
+
+        try {
+            const resposta = await fetch(`http://localhost:3001/bebidas/${idConsulta}`);
+            const data = await resposta.json();
+
+            setNome(data.NOME);
+            setTamanho(data.TAMANHO);
+            setPreco(data.PRECO);
+
+            setResultado("Dados carregados. Edite e clique em SALVAR.");
+            setEditando(true);
+        }
+        catch (error) {
+            setResultado("Erro ao carregar bebida.");
+        }
     }
 
-    function excluirBebida() {
-        setResultado("Função de excluir ainda não implementada.");
+    // ----- SALVAR ALTERAÇÃO (PUT) -----
+    async function salvarAlteracao() {
+        if (!idConsulta) {
+            setResultado("Informe o ID.");
+            return;
+        }
+
+        try {
+            setResultado("Salvando...");
+
+            const resposta = await fetch(`http://localhost:3001/bebidas/${idConsulta}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nome, tamanho, preco })
+            });
+
+            const data = await resposta.json();
+
+            setResultado(data.message || "Alterado com sucesso!");
+            setEditando(false);
+
+            setNome("");
+            setTamanho("");
+            setPreco("");
+            setIdConsulta("");
+
+            consultarTodasBebidas();
+        }
+        catch (error) {
+            setResultado("Erro ao salvar alteração.");
+        }
+    }
+
+    // ----- EXCLUIR BEBIDA -----
+    async function excluirBebida() {
+        if (!idConsulta) {
+            setResultado("Informe o ID para excluir.");
+            return;
+        }
+
+        try {
+            const resposta = await fetch(`http://localhost:3001/bebidas/${idConsulta}`, {
+                method: "DELETE"
+            });
+
+            const data = await resposta.json();
+            setResultado(data.message || "Excluído com sucesso!");
+
+            setIdConsulta("");
+            consultarTodasBebidas();
+        }
+        catch (error) {
+            setResultado("Erro ao excluir bebida.");
+        }
     }
 
     return (
@@ -81,7 +149,6 @@ export default function Bebidas() {
 
             <h1>Cadastro de Bebidas</h1>
 
-            {/* FORMULÁRIO */}
             <div className="div1">
                 <form onSubmit={(e) => e.preventDefault()}>
 
@@ -117,16 +184,21 @@ export default function Bebidas() {
                     </p>
 
                     <p>
-                        <button type="button" onClick={cadastrarBebida}>
-                            Cadastrar Bebida
-                        </button>
+                        {!editando ? (
+                            <button type="button" onClick={cadastrarBebida}>
+                                Cadastrar Bebida
+                            </button>
+                        ) : (
+                            <button type="button" onClick={salvarAlteracao}>
+                                Salvar Alteração
+                            </button>
+                        )}
                     </p>
 
                     <p>{resultado}</p>
                 </form>
             </div>
 
-            {/* CONSULTAR POR ID */}
             <div className="div2">
                 <h1>Gerenciar Bebidas</h1>
 
@@ -139,24 +211,24 @@ export default function Bebidas() {
                     onChange={(e) => setIdConsulta(e.target.value)}
                     placeholder="ID da bebida"
                 />
+
                 <div className="centro">
 
-                <button type="button" onClick={consultarBebidaPorID}>
-                    Consultar Bebida
-                </button>
+                    <button type="button" onClick={consultarBebidaPorID}>
+                        Consultar Bebida
+                    </button>
 
-                <button type="button" onClick={consultarTodasBebidas}>
-                    Pesquisa Geral
-                </button>
+                    <button type="button" onClick={consultarTodasBebidas}>
+                        Pesquisa Geral
+                    </button>
 
+                    <button type="button" onClick={alterarBebida}>
+                        Alterar Bebida
+                    </button>
 
-                <button type="button" onClick={excluirBebida}>
-                    Excluir Bebida
-                </button>
-
-                <button type="button" onClick={alterarBebida}>
-                    Alterar Bebida
-                </button>
+                    <button type="button" onClick={excluirBebida}>
+                        Excluir Bebida
+                    </button>
 
                 </div>
 
@@ -169,6 +241,7 @@ export default function Bebidas() {
                             <th>Preço</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {lista.map(item => (
                             <tr key={item.ID_BEBIDA}>
