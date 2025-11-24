@@ -1,117 +1,219 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Link } from "react-router-dom";
 
 export default function Pedidos() {
 
-    const [IDLanche, setIDLanche] = useState("");
-    const [IDBebida, setIDBebida] = useState("");
-    const [IDFuncionario, setIDFuncionario] = useState("");
-
-    const [lanches, setLanches] = useState([]);
-    const [bebidas, setBebidas] = useState([]);
-    const [funcionarios, setFuncionarios] = useState([]);
-    const [pedidos, setPedidos] = useState([]);
+    const [funcionario, setFuncionario] = useState("");
+    const [lanche, setLanche] = useState("");
+    const [bebida, setBebida] = useState("");
+    const [listaFuncionarios, setListaFuncionarios] = useState([]);
+    const [listaLanches, setListaLanches] = useState([]);
+    const [listaBebidas, setListaBebidas] = useState([]);
+    const [listaPedidos, setListaPedidos] = useState([]);
+    const [idConsulta, setIdConsulta] = useState("");
+    const [resultado, setResultado] = useState("");
+    const [editando, setEditando] = useState(false);
 
     useEffect(() => {
-        axios.get("http://localhost:3001/lanches").then(res => setLanches(res.data));
-        axios.get("http://localhost:3001/bebidas").then(res => setBebidas(res.data));
-        axios.get("http://localhost:3001/funcionarios").then(res => setFuncionarios(res.data));
-        axios.get("http://localhost:3001/pedidos").then(res => setPedidos(res.data));
+        carregarCombos();
     }, []);
 
-    function cadastrar(e) {
-        e.preventDefault();
+    async function carregarCombos() {
+        const f = await fetch("http://localhost:3001/funcionarios");
+        const l = await fetch("http://localhost:3001/lanches");
+        const b = await fetch("http://localhost:3001/bebidas");
 
-        if (!IDLanche || !IDBebida || !IDFuncionario) {
-            alert("Preencha todos os campos!");
+        setListaFuncionarios(await f.json());
+        setListaLanches(await l.json());
+        setListaBebidas(await b.json());
+    }
+
+    async function consultarTodos() {
+        const resposta = await fetch("http://localhost:3001/pedidos");
+        const data = await resposta.json();
+        setListaPedidos(data);
+        setResultado("Consulta geral realizada.");
+    }
+
+    async function cadastrar() {
+        if (!funcionario) {
+            setResultado("Selecione um funcionário.");
             return;
         }
 
-        axios.post("http://localhost:3001/pedidos", {
-            IDLanche: Number(IDLanche),
-            IDBebida: Number(IDBebida),
-            IDFuncionario: Number(IDFuncionario)
-        }).then(() => {
-            axios.get("http://localhost:3001/pedidos").then(res => setPedidos(res.data));
-            setIDLanche("");
-            setIDBebida("");
-            setIDFuncionario("");
+        const body = {
+            id_funcionario: funcionario,
+            id_lanche: lanche || null,
+            id_bebida: bebida || null
+        };
+
+        const resposta = await fetch("http://localhost:3001/pedidos", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
         });
+
+        const data = await resposta.json();
+        setResultado(data.message || "Pedido cadastrado!");
+
+        setFuncionario("");
+        setLanche("");
+        setBebida("");
+
+        consultarTodos();
     }
 
-    function excluir(id) {
-        axios.delete(`http://localhost:3001/pedidos/${id}`).then(() => {
-            axios.get("http://localhost:3001/pedidos").then(res => setPedidos(res.data));
+    async function consultarPorID() {
+        const resposta = await fetch(`http://localhost:3001/pedidos/${idConsulta}`);
+        const data = await resposta.json();
+        setListaPedidos([data]);
+        setResultado("Consulta realizada.");
+    }
+
+    async function alterar() {
+        const resposta = await fetch(`http://localhost:3001/pedidos/${idConsulta}`);
+        const data = await resposta.json();
+
+        setFuncionario(data.ID_FUNCIONARIO);
+        setLanche(data.ID_LANCHE || "");
+        setBebida(data.ID_BEBIDA || "");
+
+        setEditando(true);
+        setResultado("Dados carregados.");
+    }
+
+    async function salvarAlteracao() {
+        const body = {
+            id_funcionario: funcionario,
+            id_lanche: lanche || null,
+            id_bebida: bebida || null
+        };
+
+        const resposta = await fetch(`http://localhost:3001/pedidos/${idConsulta}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
         });
+
+        const data = await resposta.json();
+
+        setResultado(data.message || "Alterado!");
+
+        setFuncionario("");
+        setLanche("");
+        setBebida("");
+        setIdConsulta("");
+        setEditando(false);
+
+        consultarTodos();
+    }
+
+    async function excluir() {
+        const resposta = await fetch(`http://localhost:3001/pedidos/${idConsulta}`, {
+            method: "DELETE"
+        });
+
+        const data = await resposta.json();
+        setResultado(data.message || "Excluído!");
+
+        setIdConsulta("");
+        consultarTodos();
     }
 
     return (
-        <div>
+        <div className="container">
+
             <h1>Cadastro de Pedidos</h1>
 
-            <form onSubmit={cadastrar}>
-                <select value={IDLanche} onChange={(e) => setIDLanche(e.target.value)}>
-                    <option value="">Selecione um lanche</option>
-                    {lanches.map((l) => (
-                        <option key={l.ID_LANCHE} value={l.ID_LANCHE}>
-                            {l.NOME}
-                        </option>
-                    ))}
-                </select>
+            <div className="div1">
 
-                <select value={IDBebida} onChange={(e) => setIDBebida(e.target.value)}>
-                    <option value="">Selecione uma bebida</option>
-                    {bebidas.map((b) => (
-                        <option key={b.ID_BEBIDA} value={b.ID_BEBIDA}>
-                            {b.NOME} - {b.TAMANHO}
-                        </option>
-                    ))}
-                </select>
+                <p>
+                    Funcionário:
+                    <select value={funcionario} onChange={(e) => setFuncionario(e.target.value)}>
+                        <option value="">Selecione</option>
+                        {listaFuncionarios.map(f => (
+                            <option key={f.ID_FUNCIONARIO} value={f.ID_FUNCIONARIO}>
+                                {f.NOME}
+                            </option>
+                        ))}
+                    </select>
+                </p>
 
-                <select value={IDFuncionario} onChange={(e) => setIDFuncionario(e.target.value)}>
-                    <option value="">Selecione o funcionário</option>
-                    {funcionarios.map((f) => (
-                        <option key={f.ID_FUNCIONARIO} value={f.ID_FUNCIONARIO}>
-                            {f.NOME}
-                        </option>
-                    ))}
-                </select>
+                <p>
+                    Lanche (opcional):
+                    <select value={lanche} onChange={(e) => setLanche(e.target.value)}>
+                        <option value="">Nenhum</option>
+                        {listaLanches.map(l => (
+                            <option key={l.ID_LANCHE} value={l.ID_LANCHE}>{l.NOME}</option>
+                        ))}
+                    </select>
+                </p>
 
-                <button type="submit">Cadastrar Pedido</button>
-            </form>
+                <p>
+                    Bebida (opcional):
+                    <select value={bebida} onChange={(e) => setBebida(e.target.value)}>
+                        <option value="">Nenhuma</option>
+                        {listaBebidas.map(b => (
+                            <option key={b.ID_BEBIDA} value={b.ID_BEBIDA}>{b.NOME}</option>
+                        ))}
+                    </select>
+                </p>
 
-            <h2>Pedidos Cadastrados</h2>
+                {!editando ? (
+                    <button onClick={cadastrar}>Cadastrar Pedido</button>
+                ) : (
+                    <button onClick={salvarAlteracao}>Salvar Alteração</button>
+                )}
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Lanche</th>
-                        <th>Bebida</th>
-                        <th>Funcionário</th>
-                        <th>Data/Hora</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {pedidos.map((p) => (
-                        <tr key={p.IDPedido}>
-                            <td>{p.IDPedido}</td>
-                            <td>{p.Lanche}</td>
-                            <td>{p.Bebida}</td>
-                            <td>{p.Funcionario}</td>
-                            <td>{p.DataHora}</td>
-                            <td>
-                                <button onClick={() => excluir(p.IDPedido)}>Excluir</button>
-                            </td>
+                <p>{resultado}</p>
+
+            </div>
+
+            <div className="div2">
+
+                <h1>Gerenciar Pedidos</h1>
+
+                <input
+                    value={idConsulta}
+                    onChange={(e) => setIdConsulta(e.target.value)}
+                    placeholder="ID do pedido"
+                />
+
+                <div className="centro">
+                    <button onClick={consultarPorID}>Consultar Pedido</button>
+                    <button onClick={consultarTodos}>Pesquisa Geral</button>
+                    <button onClick={alterar}>Alterar Pedido</button>
+                    <button onClick={excluir}>Excluir Pedido</button>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Funcionário</th>
+                            <th>Lanche</th>
+                            <th>Bebida</th>
+                            <th>Data/Hora</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
 
-            <br />
-            <Link to="/">Voltar ao Menu</Link>
+                    <tbody>
+                        {listaPedidos.map(item => (
+                            <tr key={item.ID_PEDIDO}>
+                                <td>{item.ID_PEDIDO}</td>
+                                <td>{item.FUNCIONARIO}</td>
+                                <td>{item.LANCHE || "—"}</td>
+                                <td>{item.BEBIDA || "—"}</td>
+                                <td>{item.DATA_HORA}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+            </div>
+
+            <p><Link to="/">Página Inicial</Link></p>
+
         </div>
     );
 }

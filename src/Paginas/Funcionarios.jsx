@@ -6,11 +6,9 @@ export default function Funcionarios() {
     const [nome, setNome] = useState("");
     const [cargo, setCargo] = useState("");
     const [telefone, setTelefone] = useState("");
-
     const [lista, setLista] = useState([]);
     const [resultado, setResultado] = useState("");
     const [idConsulta, setIdConsulta] = useState("");
-
     const [editando, setEditando] = useState(false);
 
     async function consultarTodos() {
@@ -19,12 +17,13 @@ export default function Funcionarios() {
             const data = await resposta.json();
             setLista(data);
             setResultado("Consulta geral realizada.");
-        } catch {
+        }
+        catch {
             setResultado("Erro ao consultar funcionários.");
         }
     }
 
-    async function cadastrarFuncionario() {
+    async function cadastrar() {
         try {
             setResultado("Aguarde...");
 
@@ -35,73 +34,53 @@ export default function Funcionarios() {
             });
 
             const data = await resposta.json();
-            setResultado(data.message || "Cadastro realizado!");
+            setResultado(data.message || "Cadastro Realizado!");
 
             setNome("");
             setCargo("");
             setTelefone("");
-
             consultarTodos();
-        } catch {
+        }
+        catch {
             setResultado("Erro ao cadastrar funcionário.");
         }
     }
 
     async function consultarPorID() {
-        if (!idConsulta) {
-            setResultado("Digite o ID.");
-            return;
-        }
-
         try {
             const resposta = await fetch(`http://localhost:3001/funcionarios/${idConsulta}`);
-
-            if (resposta.status === 404) {
-                setResultado("Funcionário não encontrado.");
-                return;
-            }
-
             const data = await resposta.json();
             setLista([data]);
             setResultado("Consulta realizada.");
-        } catch {
+        }
+        catch {
             setResultado("Erro ao consultar funcionário.");
         }
     }
 
-    async function alterarFuncionario() {
+    async function alterar() {
         if (!idConsulta) {
-            setResultado("Informe o ID.");
+            setResultado("Informe o ID para alterar.");
             return;
         }
 
         try {
             const resposta = await fetch(`http://localhost:3001/funcionarios/${idConsulta}`);
-
-            if (resposta.status === 404) {
-                setResultado("Funcionário não encontrado.");
-                return;
-            }
-
             const data = await resposta.json();
 
             setNome(data.NOME);
             setCargo(data.CARGO);
             setTelefone(data.TELEFONE);
 
-            setResultado("Dados carregados. Clique em SALVAR.");
             setEditando(true);
-        } catch {
+            setResultado("Dados carregados. Edite e clique em SALVAR.");
+        }
+        catch {
             setResultado("Erro ao carregar funcionário.");
         }
     }
 
     async function salvarAlteracao() {
-        if (!idConsulta) {
-            setResultado("Informe o ID.");
-            return;
-        }
-
         try {
             const resposta = await fetch(`http://localhost:3001/funcionarios/${idConsulta}`, {
                 method: "PUT",
@@ -110,24 +89,23 @@ export default function Funcionarios() {
             });
 
             const data = await resposta.json();
-
             setResultado(data.message || "Alterado com sucesso!");
-            setEditando(false);
-
-            setNome("");
-            setCargo("");
-            setTelefone("");
-            setIdConsulta("");
-
-            consultarTodos();
-        } catch {
+        }
+        catch {
             setResultado("Erro ao salvar alteração.");
         }
+        setNome("");
+        setCargo("");
+        setTelefone("");
+        setIdConsulta("");
+        setEditando(false);
+
+        consultarTodos();
     }
 
-    async function excluirFuncionario() {
+    async function excluir() {
         if (!idConsulta) {
-            setResultado("Informe o ID.");
+            setResultado("Informe o ID para excluir.");
             return;
         }
 
@@ -137,18 +115,17 @@ export default function Funcionarios() {
             });
 
             const data = await resposta.json();
-            setResultado(data.message || "Excluído com sucesso!");
-
-            setIdConsulta("");
-            consultarTodos();
-        } catch {
+            setResultado(data.message || "Excluído!");
+        }
+        catch {
             setResultado("Erro ao excluir funcionário.");
         }
+        setIdConsulta("");
+        consultarTodos();
     }
 
     return (
         <div className="container">
-
             <h1>Cadastro de Funcionários</h1>
 
             <div className="div1">
@@ -169,22 +146,19 @@ export default function Funcionarios() {
                         <input value={telefone} onChange={(e) => setTelefone(e.target.value)} />
                     </p>
 
-                    <p>
-                        {!editando ? (
-                            <button onClick={cadastrarFuncionario}>Cadastrar Funcionário</button>
-                        ) : (
-                            <button onClick={salvarAlteracao}>Salvar Alteração</button>
-                        )}
-                    </p>
+                    {!editando ? (
+                        <button type="button" onClick={cadastrar}>Cadastrar</button>
+                    ) : (
+                        <button type="button" onClick={salvarAlteracao}>Salvar Alteração</button>
+                    )}
 
                     <p>{resultado}</p>
+
                 </form>
             </div>
 
             <div className="div2">
                 <h1>Gerenciar Funcionários</h1>
-
-                <p>Digite o ID do Funcionário:</p>
 
                 <input
                     value={idConsulta}
@@ -193,10 +167,10 @@ export default function Funcionarios() {
                 />
 
                 <div className="centro">
-                    <button onClick={consultarPorID}>Consultar Funcionário</button>
+                    <button onClick={consultarPorID}>Consultar</button>
                     <button onClick={consultarTodos}>Pesquisa Geral</button>
-                    <button onClick={alterarFuncionario}>Alterar Funcionário</button>
-                    <button onClick={excluirFuncionario}>Excluir Funcionário</button>
+                    <button onClick={alterar}>Alterar</button>
+                    <button onClick={excluir}>Excluir</button>
                 </div>
 
                 <table>
@@ -208,9 +182,8 @@ export default function Funcionarios() {
                             <th>Telefone</th>
                         </tr>
                     </thead>
-
                     <tbody>
-                        {lista.map(item => (
+                        {lista.map((item) => (
                             <tr key={item.ID_FUNCIONARIO}>
                                 <td>{item.ID_FUNCIONARIO}</td>
                                 <td>{item.NOME}</td>
@@ -223,9 +196,7 @@ export default function Funcionarios() {
 
             </div>
 
-            <div>
-                <p><Link to="/">Página Inicial</Link></p>
-            </div>
+            <p><Link to="/">Página Inicial</Link></p>
         </div>
     );
 }

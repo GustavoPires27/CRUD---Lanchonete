@@ -6,28 +6,25 @@ export default function Lanches() {
     const [nome, setNome] = useState("");
     const [descricao, setDescricao] = useState("");
     const [preco, setPreco] = useState("");
-
     const [lista, setLista] = useState([]);
     const [resultado, setResultado] = useState("");
     const [idConsulta, setIdConsulta] = useState("");
-
     const [editando, setEditando] = useState(false);
 
-    async function consultarTodosLanches() {
+    async function consultarTodos() {
         try {
             const resposta = await fetch("http://localhost:3001/lanches");
             const data = await resposta.json();
             setLista(data);
             setResultado("Consulta geral realizada.");
-        } catch {
+        }
+        catch {
             setResultado("Erro ao consultar lanches.");
         }
     }
 
-    async function cadastrarLanche() {
+    async function cadastrar() {
         try {
-            setResultado("Aguarde...");
-
             const resposta = await fetch("http://localhost:3001/lanches", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -35,76 +32,50 @@ export default function Lanches() {
             });
 
             const data = await resposta.json();
-            setResultado(data.message || "Cadastro realizado!");
+            setResultado(data.message || "Cadastrado!");
 
             setNome("");
             setDescricao("");
             setPreco("");
 
-            consultarTodosLanches();
-        } catch {
+            consultarTodos();
+        }
+        catch {
             setResultado("Erro ao cadastrar lanche.");
         }
     }
 
-    async function consultarLanchePorID() {
-        if (!idConsulta) {
-            setResultado("Digite o ID.");
-            return;
-        }
-
+    async function consultarPorID() {
         try {
             const resposta = await fetch(`http://localhost:3001/lanches/${idConsulta}`);
-
-            if (resposta.status === 404) {
-                setResultado("Lanche não encontrado.");
-                return;
-            }
-
             const data = await resposta.json();
             setLista([data]);
             setResultado("Consulta realizada.");
-        } catch {
+        }
+        catch {
             setResultado("Erro ao consultar lanche.");
         }
     }
 
-    async function alterarLanche() {
-        if (!idConsulta) {
-            setResultado("Digite o ID para alterar.");
-            return;
-        }
-
+    async function alterar() {
         try {
             const resposta = await fetch(`http://localhost:3001/lanches/${idConsulta}`);
-
-            if (resposta.status === 404) {
-                setResultado("Lanche não encontrado.");
-                return;
-            }
-
             const data = await resposta.json();
 
             setNome(data.NOME);
             setDescricao(data.DESCRICAO);
             setPreco(data.PRECO);
 
-            setResultado("Dados carregados. Clique em SALVAR.");
             setEditando(true);
-        } catch {
+            setResultado("Dados carregados.");
+        }
+        catch {
             setResultado("Erro ao carregar lanche.");
         }
     }
 
     async function salvarAlteracao() {
-        if (!idConsulta) {
-            setResultado("Informe o ID.");
-            return;
-        }
-
         try {
-            setResultado("Salvando...");
-
             const resposta = await fetch(`http://localhost:3001/lanches/${idConsulta}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -112,40 +83,33 @@ export default function Lanches() {
             });
 
             const data = await resposta.json();
-
-            setResultado(data.message || "Alterado com sucesso!");
-            setEditando(false);
-
-            setNome("");
-            setDescricao("");
-            setPreco("");
-            setIdConsulta("");
-
-            consultarTodosLanches();
-        } catch {
+            setResultado(data.message || "Alterado!");
+        }
+        catch {
             setResultado("Erro ao salvar alteração.");
         }
+        setNome("");
+        setDescricao("");
+        setPreco("");
+        setIdConsulta("");
+        setEditando(false);
+        consultarTodos();
     }
 
-    async function excluirLanche() {
-        if (!idConsulta) {
-            setResultado("Informe o ID.");
-            return;
-        }
-
+    async function excluir() {
         try {
             const resposta = await fetch(`http://localhost:3001/lanches/${idConsulta}`, {
                 method: "DELETE"
             });
 
             const data = await resposta.json();
-            setResultado(data.message || "Excluído com sucesso!");
-
-            setIdConsulta("");
-            consultarTodosLanches();
-        } catch {
+            setResultado(data.message || "Excluído!");
+        }
+        catch {
             setResultado("Erro ao excluir lanche.");
         }
+        setIdConsulta("");
+        consultarTodos();
     }
 
     return (
@@ -154,10 +118,10 @@ export default function Lanches() {
             <h1>Cadastro de Lanches</h1>
 
             <div className="div1">
-                <form onSubmit={(e) => e.preventDefault()}>
 
+                <form onSubmit={(e) => e.preventDefault()}>
                     <p>
-                        Nome do Lanche:
+                        Nome:
                         <input value={nome} onChange={(e) => setNome(e.target.value)} />
                     </p>
 
@@ -168,38 +132,35 @@ export default function Lanches() {
 
                     <p>
                         Preço:
-                        <input type="number" step="0.01" value={preco} onChange={(e) => setPreco(e.target.value)} />
+                        <input value={preco} onChange={(e) => setPreco(e.target.value)} type="number" step="0.01" />
                     </p>
 
-                    <p>
-                        {!editando ? (
-                            <button type="button" onClick={cadastrarLanche}>Cadastrar Lanche</button>
-                        ) : (
-                            <button type="button" onClick={salvarAlteracao}>Salvar Alteração</button>
-                        )}
-                    </p>
+                    {!editando ? (
+                        <button type="button" onClick={cadastrar}>Cadastrar</button>
+                    ) : (
+                        <button type="button" onClick={salvarAlteracao}>Salvar Alteração</button>
+                    )}
 
                     <p>{resultado}</p>
                 </form>
+
             </div>
 
             <div className="div2">
 
                 <h1>Gerenciar Lanches</h1>
 
-                <p>Digite o ID do Lanche:</p>
-
                 <input
                     value={idConsulta}
                     onChange={(e) => setIdConsulta(e.target.value)}
-                    placeholder="ID"
+                    placeholder="ID do lanche"
                 />
 
                 <div className="centro">
-                    <button onClick={consultarLanchePorID}>Consultar Lanche</button>
-                    <button onClick={consultarTodosLanches}>Pesquisa Geral</button>
-                    <button onClick={alterarLanche}>Alterar Lanche</button>
-                    <button onClick={excluirLanche}>Excluir Lanche</button>
+                    <button onClick={consultarPorID}>Consultar Lanche</button>
+                    <button onClick={consultarTodos}>Pesquisa Geral</button>
+                    <button onClick={alterar}>Alterar Lanche</button>
+                    <button onClick={excluir}>Excluir Lanche</button>
                 </div>
 
                 <table>
@@ -226,9 +187,8 @@ export default function Lanches() {
 
             </div>
 
-            <div>
-                <p><Link to="/">Página Inicial</Link></p>
-            </div>
+            <p><Link to="/">Página Inicial</Link></p>
+
         </div>
     );
 }
