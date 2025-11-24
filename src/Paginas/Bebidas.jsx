@@ -107,18 +107,20 @@ export default function Bebidas() {
             const data = await resposta.json();
 
             setResultado(data.message || "Alterado com sucesso!");
-            setEditando(false);
 
-            setNome("");
-            setTamanho("");
-            setPreco("");
-            setIdConsulta("");
 
-            consultarTodasBebidas();
+
         }
         catch (error) {
             setResultado("Erro ao salvar alteração.");
         }
+        setNome("");
+        setTamanho("");
+        setPreco("");
+        setIdConsulta("");
+
+        consultarTodasBebidas();
+        setEditando(false);
     }
 
     // ----- EXCLUIR BEBIDA -----
@@ -137,11 +139,13 @@ export default function Bebidas() {
             setResultado(data.message || "Excluído com sucesso!");
 
             setIdConsulta("");
-            consultarTodasBebidas();
+
         }
         catch (error) {
             setResultado("Erro ao excluir bebida.");
         }
+        await consultarTodasBebidas();
+        setIdConsulta("");
     }
 
     return (
