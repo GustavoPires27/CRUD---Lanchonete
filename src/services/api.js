@@ -85,6 +85,19 @@ app.get("/lanches", (req, res) => {
     });
 });
 
+app.get("/lanches/:ID", (req, res) => {
+    banco.query(
+        "SELECT * FROM LANCHES WHERE ID_LANCHE = ?",
+        [req.params.ID],
+        (erro, resultados) => {
+            if (erro) return res.status(500).send("Erro ao buscar lanche");
+            if (resultados.length === 0) return res.status(404).send("Não encontrada");
+            res.json(resultados[0]);
+        }
+    );
+});
+
+
 app.post("/lanches", (req, res) => {
     const { nome, descricao, preco } = req.body;
     banco.query(
@@ -120,11 +133,25 @@ app.delete("/lanches/:ID", (req, res) => {
     );
 });
 
+
+
 app.get("/funcionarios", (req, res) => {
     banco.query("SELECT * FROM FUNCIONARIOS", (erro, resultados) => {
         if (erro) return res.status(500).send("Erro ao consultar funcionários");
         res.json(resultados);
     });
+});
+
+app.get("/funcionarios/:ID", (req, res) => {
+    banco.query(
+        "SELECT * FROM FUNCIONARIOS WHERE ID_FUNCIONARIO = ?",
+        [req.params.ID],
+        (erro, resultados) => {
+            if (erro) return res.status(500).send("Erro ao buscar lanche");
+            if (resultados.length === 0) return res.status(404).send("Não encontrada");
+            res.json(resultados[0]);
+        }
+    );
 });
 
 app.post("/funcionarios", (req, res) => {
@@ -163,6 +190,27 @@ app.delete("/funcionarios/:ID", (req, res) => {
 });
 
 app.get("/pedidos", (req, res) => {
+    const sql = `
+        SELECT 
+            p.IDPedido,
+            p.DataHora,
+            l.Nome AS Lanche,
+            b.Nome AS Bebida,
+            f.Nome AS Funcionario
+        FROM pedidos p
+        INNER JOIN lanches l ON p.IDLanche = l.IDLanche
+        INNER JOIN bebidas b ON p.IDBebida = b.IDBebida
+        INNER JOIN funcionarios f ON p.IDFuncionario = f.IDFuncionario
+        ORDER BY p.IDPedido DESC
+    `;
+
+    banco.query(sql, (erro, resultados) => {
+        if (erro) return res.status(500).send("Erro ao listar pedidos");
+        res.json(resultados);
+    });
+});
+
+app.get("/pedidos/:ID", (req, res) => {
     const sql = `
         SELECT 
             p.IDPedido,
