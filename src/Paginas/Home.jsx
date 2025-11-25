@@ -12,7 +12,6 @@ export default function Home() {
                         <li><a href="/lanches">Lanches</a></li>
                         <li><a href="/bebidas">Bebidas</a></li>
                         <li><a href="/funcionarios">Cadastro Funcionários</a></li>
-                        <li><a href="/categoriaLanches">Categoria de Lanches</a></li>
                     </ul>
                 </div>
             </div>

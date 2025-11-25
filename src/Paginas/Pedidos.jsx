@@ -113,7 +113,7 @@ export default function Pedidos() {
             method: "DELETE"
         });
 
-        const data = await resposta.json();
+        const data = await resposta.text();
         setResultado(data.message || "Excluído!");
 
         setIdConsulta("");

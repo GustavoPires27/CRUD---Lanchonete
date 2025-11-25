@@ -192,16 +192,16 @@ app.delete("/funcionarios/:ID", (req, res) => {
 app.get("/pedidos", (req, res) => {
     const sql = `
         SELECT 
-            p.IDPedido,
-            p.DataHora,
-            l.Nome AS Lanche,
-            b.Nome AS Bebida,
-            f.Nome AS Funcionario
-        FROM pedidos p
-        INNER JOIN lanches l ON p.IDLanche = l.IDLanche
-        INNER JOIN bebidas b ON p.IDBebida = b.IDBebida
-        INNER JOIN funcionarios f ON p.IDFuncionario = f.IDFuncionario
-        ORDER BY p.IDPedido DESC
+            p.ID_PEDIDO,
+            p.DATA_HORA,
+            l.NOME AS LANCHE,
+            b.NOME AS BEBIDA,
+            f.NOME AS FUNCIONARIO
+        FROM PEDIDOS p
+        LEFT JOIN LANCHES l ON p.ID_LANCHE = l.ID_LANCHE
+        LEFT JOIN BEBIDAS b ON p.ID_BEBIDA = b.ID_BEBIDA
+        LEFT JOIN FUNCIONARIOS f ON p.ID_FUNCIONARIO = f.ID_FUNCIONARIO
+        ORDER BY p.ID_PEDIDO DESC
     `;
 
     banco.query(sql, (erro, resultados) => {
@@ -213,49 +213,67 @@ app.get("/pedidos", (req, res) => {
 app.get("/pedidos/:ID", (req, res) => {
     const sql = `
         SELECT 
-            p.IDPedido,
-            p.DataHora,
-            l.Nome AS Lanche,
-            b.Nome AS Bebida,
-            f.Nome AS Funcionario
-        FROM pedidos p
-        INNER JOIN lanches l ON p.IDLanche = l.IDLanche
-        INNER JOIN bebidas b ON p.IDBebida = b.IDBebida
-        INNER JOIN funcionarios f ON p.IDFuncionario = f.IDFuncionario
-        ORDER BY p.IDPedido DESC
+            p.ID_PEDIDO,
+            p.DATA_HORA,
+            f.NOME AS FUNCIONARIO,
+            l.NOME AS LANCHE,
+            b.NOME AS BEBIDA
+        FROM PEDIDOS p
+        LEFT JOIN FUNCIONARIOS f ON p.ID_FUNCIONARIO = f.ID_FUNCIONARIO
+        LEFT JOIN LANCHES l ON p.ID_LANCHE = l.ID_LANCHE
+        LEFT JOIN BEBIDAS b ON p.ID_BEBIDA = b.ID_BEBIDA
+        WHERE p.ID_PEDIDO = ?
     `;
 
-    banco.query(sql, (erro, resultados) => {
-        if (erro) return res.status(500).send("Erro ao listar pedidos");
-        res.json(resultados);
+    banco.query(sql, [req.params.ID], (erro, resultados) => {
+        if (erro) return res.status(500).send("Erro ao consultar pedido");
+        res.json(resultados[0]);
     });
 });
 
-app.post("/pedidos", (req, res) => {
-    let { IDLanche, IDBebida, IDFuncionario } = req.body;
 
-    IDLanche = Number(IDLanche);
-    IDBebida = Number(IDBebida);
-    IDFuncionario = Number(IDFuncionario);
+
+app.post("/pedidos", (req, res) => {
+    let { id_lanche, id_bebida, id_funcionario } = req.body;
+
+    id_lanche = Number(id_lanche);
+    id_bebida = Number(id_bebida);
+    id_funcionario = Number(id_funcionario);
 
     const sql = `
-        INSERT INTO pedidos (ID_LANCHE, ID_BEBIDA, ID_FUNCIONARIO, DataHora)
+        INSERT INTO pedidos (ID_LANCHE, ID_BEBIDA, ID_FUNCIONARIO, DATA_HORA)
         VALUES (?, ?, ?, NOW())
     `;
 
-    banco.query(sql, [IDLanche, IDBebida, IDFuncionario], (erro) => {
+    banco.query(sql, [id_lanche, id_bebida, id_funcionario], (erro) => {
         if (erro) {
             console.error("Erro ao cadastrar pedido:", erro);
-            return res.status(500).send("Erro ao cadastrar pedido");
+            return res.status(500).json({ message: "Erro ao cadastrar pedido" });
         }
-        res.send("Pedido cadastrado com sucesso");
+        res.json({ message: "Pedido cadastrado com sucesso!" });
     });
 });
 
 
-app.delete("/pedidos/:id", (req, res) => {
+app.put("/pedidos/:ID", (req, res) => {
+    const { id_funcionario, id_lanche, id_bebida } = req.body;
+
+    const sql = `
+        UPDATE PEDIDOS 
+        SET ID_FUNCIONARIO=?, ID_LANCHE=?, ID_BEBIDA=? 
+        WHERE ID_PEDIDO=?
+    `;
+
+    banco.query(sql, [id_funcionario, id_lanche, id_bebida, req.params.ID], (erro) => {
+        if (erro) return res.status(500).send("Erro ao atualizar pedido");
+        res.json({ message: "Pedido atualizado!" });
+    });
+});
+
+
+app.delete("/pedidos/:ID", (req, res) => {
     banco.query(
-        "DELETE FROM pedidos WHERE IDPedido=?",
+        "DELETE FROM pedidos WHERE ID_PEDIDO = ?",
         [req.params.id],
         (erro) => {
             if (erro) return res.status(500).send("Erro ao excluir pedido");
